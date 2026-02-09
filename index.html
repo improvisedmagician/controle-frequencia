@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presença Digital - Buíque</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(29, 78, 216, 0.15) 0px, transparent 50%);
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .input-dark {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .input-dark:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+        }
+        .btn-grad {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+        }
+        .btn-grad:active { transform: scale(0.98); }
+        
+        /* Animação suave para as opções do select */
+        select option { background: #1e293b; color: white; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="fixed top-20 -left-20 w-64 h-64 bg-blue-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-pulse"></div>
+    <div class="fixed bottom-20 -right-20 w-64 h-64 bg-indigo-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-pulse"></div>
+
+    <main class="w-full max-w-md z-10">
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-3xl shadow-2xl mb-4 transform -rotate-6">
+                <i class="fas fa-fingerprint text-white text-3xl"></i>
+            </div>
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">Presença <span class="text-blue-500">Digital</span></h1>
+            <p class="text-slate-400 text-sm font-medium mt-1 uppercase tracking-[0.2em]">Secretaria de Educação • Buíque</p>
+        </div>
+
+        <div class="glass rounded-[2.5rem] p-8 shadow-2xl">
+            <form id="attendance-form" class="space-y-5">
+                
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-blue-400 uppercase tracking-widest ml-1">Quem é você?</label>
+                    <div class="relative">
+                        <i class="far fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                        <input type="text" id="user-name" placeholder="Nome Completo" 
+                               class="input-dark w-full pl-11 pr-4 py-4 rounded-2xl outline-none font-medium placeholder:text-slate-600" required>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-blue-400 uppercase tracking-widest ml-1">Documento</label>
+                    <div class="relative">
+                        <i class="far fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                        <input type="text" id="user-cpf" placeholder="CPF ou Matrícula" 
+                               class="input-dark w-full pl-11 pr-4 py-4 rounded-2xl outline-none font-medium placeholder:text-slate-600" required>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-blue-400 uppercase tracking-widest ml-1">Sua Unidade Escolar</label>
+                    <div class="relative">
+                        <i class="fas fa-school absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                        <select id="user-origin" class="input-dark w-full pl-11 pr-4 py-4 rounded-2xl outline-none font-bold appearance-none cursor-pointer" required>
+                            <option value="">Carregando...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-blue-400 uppercase tracking-widest ml-1">Local do Evento</label>
+                    <div class="relative">
+                        <i class="fas fa-location-dot absolute left-4 top-1/2 -translate-y-1/2 text-blue-500 text-sm"></i>
+                        <select id="event-location" class="input-dark w-full pl-11 pr-4 py-4 rounded-2xl outline-none font-bold appearance-none cursor-pointer border-blue-500/30" required>
+                            <option value="">Aguardando...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-submit" 
+                        class="btn-grad w-full text-white py-5 rounded-2xl font-black uppercase tracking-widest text-xs mt-4 transition-all hover:brightness-110 flex items-center justify-center gap-2">
+                    Registrar Agora <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div id="success-msg" class="hidden text-center py-6">
+                <div class="w-20 h-20 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+                    <i class="fas fa-check-double text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2">Presença Confirmada!</h2>
+                <p class="text-slate-400 text-sm">Obrigado, seu registro foi enviado com sucesso para a Secretaria.</p>
+                <button onclick="window.location.reload()" class="mt-8 text-blue-400 text-xs font-bold uppercase tracking-widest hover:text-blue-300">Voltar ao Início</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-auto py-8 text-slate-600 text-[9px] font-bold uppercase tracking-[0.4em]">
+        Buíque-PE • Inovação na Educação
+    </footer>
+
+    <script type="module">
+        import { Storage } from './js/storage.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const form = document.getElementById('attendance-form');
+            const successMsg = document.getElementById('success-msg');
+            const schoolSelect = document.getElementById('user-origin');
+            const eventSelect = document.getElementById('event-location');
+            
+            // Carregar Escolas
+            try {
+                const schools = await Storage.getSchools();
+                schoolSelect.innerHTML = '<option value="">Selecione sua escola</option>';
+                schools.forEach(s => schoolSelect.innerHTML += `<option value="${s}">${s}</option>`);
+            } catch (e) { schoolSelect.innerHTML = '<option>Erro ao carregar</option>'; }
+
+            // Carregar Eventos de Hoje
+            const hoje = new Date().toISOString().split('T')[0];
+            try {
+                const events = await Storage.getEventsByDate(hoje);
+                if (events.length > 0) {
+                    eventSelect.innerHTML = '<option value="">Onde você está?</option>';
+                    events.forEach(e => eventSelect.innerHTML += `<option value="${e.name}">${e.name}</option>`);
+                } else {
+                    eventSelect.innerHTML = '<option value="">Nenhum evento ativo hoje</option>';
+                }
+            } catch (e) { eventSelect.innerHTML = '<option>Erro ao carregar</option>'; }
+
+            // Enviar Form
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('btn-submit');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> ENVIANDO...';
+
+                const data = {
+                    name: document.getElementById('user-name').value,
+                    cpf: document.getElementById('user-cpf').value,
+                    userOrigin: schoolSelect.value,
+                    institution: eventSelect.value,
+                    date: hoje,
+                    time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                    id: Date.now()
+                };
+
+                try {
+                    await Storage.save(data);
+                    form.classList.add('hidden');
+                    successMsg.classList.remove('hidden');
+                } catch (err) {
+                    alert("Erro! Verifique sua conexão.");
+                    btn.disabled = false;
+                    btn.innerHTML = 'Registrar Agora <i class="fas fa-arrow-right"></i>';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
