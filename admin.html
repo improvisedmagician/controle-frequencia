@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Administrativo - Controle de Frequência</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./css/output.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -91,24 +91,37 @@
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row gap-4 items-end">
-            <div class="flex-grow w-full">
-                <label class="block text-[10px] font-black text-slate-500 uppercase mb-2 ml-1">Gerenciar Lista de Presença</label>
-                <div class="flex gap-2">
-                    <select id="filter-institution" class="flex-grow p-4 border border-slate-200 rounded-2xl bg-slate-50 font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all cursor-pointer">
+        <div class="bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-slate-100 mb-8">
+            <label class="block text-[10px] font-black text-slate-500 uppercase mb-3 ml-1 tracking-widest text-center md:text-left">
+                Gerenciar Lista de Presença
+            </label>
+            
+            <div class="flex flex-col md:flex-row gap-3">
+                
+                <div class="flex-grow relative">
+                    <select id="filter-institution" class="w-full p-4 border border-slate-200 rounded-2xl bg-slate-50 font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition-all cursor-pointer appearance-none">
                         <option value="all">Carregando eventos...</option>
                     </select>
-                    <button onclick="window.deleteEvent(document.getElementById('filter-institution').value)" 
-                            class="bg-red-50 text-red-500 px-5 py-4 rounded-2xl font-bold hover:bg-red-500 hover:text-white transition-all border border-red-100" 
-                            title="Excluir Evento Selecionado">
-                        <i class="fas fa-calendar-times"></i>
-                    </button>
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
                 </div>
-            </div>
-            <div class="flex gap-2 w-full md:w-auto">
-                <button id="btn-export-csv" class="flex-grow md:flex-none bg-emerald-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-emerald-700 transition-all shadow-lg flex items-center justify-center uppercase text-xs">
-                    <i class="fas fa-file-csv mr-2"></i> Exportar CSV
-                </button>
+        
+                <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+    
+                    <button onclick="window.deleteEvent(document.getElementById('filter-institution').value)" 
+                            class="w-full sm:w-auto flex items-center justify-center gap-2 bg-red-50 text-red-600 px-6 py-4 rounded-2xl font-bold hover:bg-red-500 hover:text-white transition-all border border-red-100 shadow-sm order-2 sm:order-1">
+                        <i class="fas fa-calendar-times"></i>
+                        <span class="sm:hidden uppercase text-[10px] tracking-widest">Excluir Evento</span>
+                    </button>
+                
+                    <button id="btn-export-csv" 
+                            class="w-full sm:w-auto flex-grow flex items-center justify-center gap-3 bg-emerald-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 uppercase text-[10px] sm:text-xs tracking-widest order-1 sm:order-2">
+                        <i class="fas fa-file-csv text-lg"></i>
+                        <span>Exportar Lista completa</span>
+                    </button>
+                
+                </div>
             </div>
         </div>
 

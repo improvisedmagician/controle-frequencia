@@ -1,0 +1,18 @@
+{
+  "name": "controle-frequencia",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tailwindcss -i ./src/input.css -o ./css/output.css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/improvisedmagician/controle-frequencia.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tailwindcss": "^3.4.1"
+  }
+}

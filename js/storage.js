@@ -15,56 +15,68 @@ const firebaseConfig = {
   measurementId: "G-R663T5EWRD"
 };
 
-// Inicializa o Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const Storage = {
-    // Limpa nomes de chaves para o Firebase
     sanitizeKey(text) {
+        if (!text) return 'indefinido';
         return text.normalize("NFD")
                    .replace(/[\u0300-\u036f]/g, "")
                    .replace(/[^\w\s]/gi, '')
                    .replace(/\s+/g, '_');
     },
 
-    // Salva a presença do aluno
     async save(entry) {
-        const instKey = this.sanitizeKey(entry.institution);
-        const path = `frequencias/${instKey}/${entry.date}`;
-        const listRef = ref(db, path);
-        const newEntryRef = push(listRef);
-        await set(newEntryRef, entry);
+        try {
+            const instKey = this.sanitizeKey(entry.institution);
+            const path = `frequencias/${instKey}/${entry.date}`;
+            const listRef = ref(db, path);
+            const newEntryRef = push(listRef);
+            await set(newEntryRef, entry);
+            return true;
+        } catch (error) {
+            console.error("Erro ao salvar frequência:", error);
+            throw error;
+        }
     },
 
-    // Cria um evento oficial (Admin)
     async createEvent(institution, date) {
         const instKey = this.sanitizeKey(institution);
         const path = `eventos_ativos/${date}/${instKey}`;
         await set(ref(db, path), { name: institution, date: date });
     },
 
-    // Busca eventos ativos por data
     async getEventsByDate(targetDate) {
-        const dbRef = ref(db);
-        const snapshot = await get(child(dbRef, `eventos_ativos/${targetDate}`));
-        return snapshot.exists() ? Object.values(snapshot.val()) : [];
+        try {
+            const dbRef = ref(db);
+            const snapshot = await get(child(dbRef, `eventos_ativos/${targetDate}`));
+            return snapshot.exists() ? Object.values(snapshot.val()) : [];
+        } catch (error) {
+            console.error("Erro ao buscar eventos:", error);
+            return [];
+        }
     },
 
-    // Salva uma escola oficial
     async saveSchool(name) {
         const schoolKey = this.sanitizeKey(name);
         await set(ref(db, `escolas_oficiais/${schoolKey}`), name);
     },
 
-    // Busca lista de escolas
     async getSchools() {
-        const dbRef = ref(db);
-        const snapshot = await get(child(dbRef, `escolas_oficiais`));
-        if (snapshot.exists()) {
-            return Object.values(snapshot.val()).sort();
+        try {
+            const dbRef = ref(db);
+            const snapshot = await get(child(dbRef, `escolas_oficiais`));
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                // Garante que retorne um array de strings ordenado
+                return Object.values(data).sort((a, b) => a.localeCompare(b));
+            }
+            return [];
+        } catch (error) {
+            console.error("Erro ao buscar escolas:", error);
+            return [];
         }
-        return [];
     }
 };
 

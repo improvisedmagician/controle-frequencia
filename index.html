@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presença Digital - Buíque</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./css/output.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -17,8 +17,8 @@
         }
         .glass {
             background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .input-dark {
@@ -116,6 +116,34 @@
 
     <footer class="mt-auto py-8 text-slate-600 text-[9px] font-bold uppercase tracking-[0.4em]">
         Buíque-PE • Inovação na Educação
+        <div class="mt-4 text-center">
+            <button type="button" onclick="toggleTerms()" class="text-[9px] text-slate-500 hover:text-blue-400 transition-colors uppercase tracking-widest font-bold">
+                Termos de Uso e Privacidade (LGPD)
+            </button>
+        </div>
+        
+        <div id="terms-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm">
+            <div class="glass max-w-sm w-full p-8 rounded-[2rem] border border-white/10 shadow-2xl">
+                <h3 class="text-blue-400 font-black text-xs uppercase tracking-[0.2em] mb-4">Privacidade & LGPD</h3>
+                <div class="text-slate-300 text-[11px] leading-relaxed space-y-3 font-medium">
+                    <p>• <strong>Coleta:</strong> Dados coletados apenas para fins de registro de frequência oficial.</p>
+                    <p>• <strong>Uso:</strong> Exclusivo da Secretaria de Educação de Buíque-PE.</p>
+                    <p>• <strong>Proteção:</strong> Armazenamento seguro em nuvem com criptografia.</p>
+                    <p>• <strong>Direitos:</strong> Seus dados não serão compartilhados com terceiros para fins comerciais.</p>
+                </div>
+                <button type="button" onclick="toggleTerms()" class="w-full mt-8 bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all">
+                    Entendi e Aceito
+                </button>
+            </div>
+        </div>
+        
+        <script>
+            // Função para abrir/fechar o modal
+            function toggleTerms() {
+                const modal = document.getElementById('terms-modal');
+                modal.classList.toggle('hidden');
+            }
+        </script>
     </footer>
 
     <script type="module">
