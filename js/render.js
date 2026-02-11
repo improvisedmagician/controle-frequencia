@@ -189,15 +189,34 @@ window.deleteSchool = async (n) => {
     }
 };
 
+// Substitua a função window.deleteEvent antiga por esta:
+// No arquivo js/render.js
+
 window.deleteEvent = async (path) => {
-    if (!path || path === 'all') return alert("Selecione um evento válido para excluir.");
+    if (!path || path === 'all') return alert("Selecione um evento válido.");
     
-    // path vem como: chave_escola/2026-02-10
     const [instKey, date] = path.split('/');
     
-    if (confirm(`⚠️ ATENÇÃO!\n\nDeseja encerrar este evento?\nIsso vai ocultar o evento do painel, mas manterá os registros salvos.`)) {
+    // Pergunta mais suave (pois os dados estão seguros)
+    if (!confirm(`Deseja encerrar o evento de ${instKey} (${date})?\n\nEle sairá do menu dos alunos, mas a lista de presença ficará salva no Banco de Dados.`)) {
+        return;
+    }
+
+    try {
+        // 1. APAGA APENAS O EVENTO (O "Link" de acesso)
+        // Isso impede novos cadastros e limpa o menu
         await remove(ref(db, `eventos_ativos/${date}/${instKey}`));
+        
+        // 2. A LISTA DE PRESENÇA NÃO É TOCADA!
+        // A linha abaixo foi removida propositalmente para "Salvar no Firebase"
+        // await remove(ref(db, `frequencias/${instKey}/${date}`)); <--- COMENTADO
+
+        alert("Evento encerrado! A lista de presença continua salva no banco de dados.");
         window.location.reload();
+
+    } catch (error) {
+        console.error("Erro:", error);
+        alert("Erro ao encerrar evento.");
     }
 };
 

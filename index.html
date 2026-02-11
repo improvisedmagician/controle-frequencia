@@ -69,11 +69,16 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-[10px] font-bold text-blue-400 uppercase tracking-widest ml-1">Documento</label>
+                    <label class="text-[10px] font-bold text-blue-400 uppercase tracking-widest ml-1">CPF</label>
                     <div class="relative">
                         <i class="far fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-                        <input type="text" id="user-cpf" placeholder="CPF ou Matrícula" 
-                               class="input-dark w-full pl-11 pr-4 py-4 rounded-2xl outline-none font-medium placeholder:text-slate-600" required>
+                        <input type="text" 
+                               id="user-cpf" 
+                               placeholder="000.000.000-00" 
+                               maxlength="14"
+                               inputmode="numeric"
+                               class="input-dark w-full pl-11 pr-4 py-4 rounded-2xl outline-none font-medium placeholder:text-slate-600" 
+                               required>
                     </div>
                 </div>
 
@@ -145,6 +150,28 @@
             }
         </script>
     </footer>
+    <script>
+        const cpfInput = document.getElementById('user-cpf');
+        
+        if (cpfInput) {
+            cpfInput.addEventListener('input', function(e) {
+                let value = e.target.value;
+
+                // 1. O "Faxineiro": Remove tudo que não é número na hora
+                value = value.replace(/\D/g, "");
+
+                // 2. O "Decorador": Coloca os pontos e traço
+                value = value.replace(/(\d{3})(\d)/, "$1.$2");
+                value = value.replace(/(\d{3})(\d)/, "$1.$2");
+                value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+
+                // 3. Devolve limpo para o campo
+                e.target.value = value;
+            });
+        } else {
+            console.error("Erro: Campo user-cpf não encontrado!");
+        }
+    </script>
 
     <script type="module">
         import { Storage } from './js/storage.js';
@@ -155,14 +182,16 @@
             const schoolSelect = document.getElementById('user-origin');
             const eventSelect = document.getElementById('event-location');
             
+            // --- CÓDIGO DO FORMULÁRIO (Selects, Submit, etc) ---
+            
             // Carregar Escolas
             try {
                 const schools = await Storage.getSchools();
                 schoolSelect.innerHTML = '<option value="">Selecione sua escola</option>';
                 schools.forEach(s => schoolSelect.innerHTML += `<option value="${s}">${s}</option>`);
-            } catch (e) { schoolSelect.innerHTML = '<option>Erro ao carregar</option>'; }
+            } catch (e) { console.error(e); }
 
-            // Carregar Eventos de Hoje
+            // Carregar Eventos
             const hoje = new Date().toISOString().split('T')[0];
             try {
                 const events = await Storage.getEventsByDate(hoje);
@@ -172,9 +201,9 @@
                 } else {
                     eventSelect.innerHTML = '<option value="">Nenhum evento ativo hoje</option>';
                 }
-            } catch (e) { eventSelect.innerHTML = '<option>Erro ao carregar</option>'; }
+            } catch (e) { console.error(e); }
 
-            // Enviar Form
+            // Enviar
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const btn = document.getElementById('btn-submit');
@@ -196,7 +225,7 @@
                     form.classList.add('hidden');
                     successMsg.classList.remove('hidden');
                 } catch (err) {
-                    alert("Erro! Verifique sua conexão.");
+                    alert("Erro ao salvar! Tente novamente.");
                     btn.disabled = false;
                     btn.innerHTML = 'Registrar Agora <i class="fas fa-arrow-right"></i>';
                 }
