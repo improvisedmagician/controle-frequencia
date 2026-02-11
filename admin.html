@@ -151,79 +151,88 @@
         import { Storage } from './js/storage.js';
         import { Render } from './js/render.js';
 
+        // Torna global
         window.Render = Render;
         window.Storage = Storage;
 
-       
-    // Função para transformar texto em HASH (SHA-256)
-    async function sha256(message) {
-        const msgBuffer = new TextEncoder().encode(message);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
+        // --- SISTEMA DE SEGURANÇA EMBUTIDO (INFALÍVEL) ---
+        async function checkSecurity() {
+            // 1. Verifica se já tem o "crachá" de admin
+            const isLogged = sessionStorage.getItem('admin_logged');
+            
+            if (isLogged === 'true') {
+                return true; // Já está logado, pode passar
+            }
 
-    // Lógica de Proteção
-    (async function verifyAdmin() {
-        // Se já estiver logado, não faz nada
-        if (sessionStorage.getItem('admin_auth') === 'true') return;
+            // 2. Se não tem crachá, BLOQUEIA a tela e pede senha
+            document.body.style.display = 'none'; // Esconde tudo imediatamente
+            
+            // Pequeno delay para garantir que o navegador renderize o prompt
+            await new Promise(r => setTimeout(r, 100)); 
 
-        const pass = prompt("Senha do Administrador:");
-        
-        if (!pass) {
-            window.location.href = "index.html";
-            return;
+            const password = prompt("🔒 ÁREA RESTRITA: Digite a senha de Admin:");
+
+            // 3. Verifica a senha (buique2026)
+            if (password === "buique2026") {
+                sessionStorage.setItem('admin_logged', 'true');
+                document.body.style.display = 'block'; // Mostra a tela
+                return true;
+            } else {
+                alert("⛔ Senha Incorreta!");
+                window.location.href = "index.html"; // Chuta para fora
+                return false;
+            }
         }
 
-        // Gera o hash do que foi digitado
-        const hashDigitado = await sha256(pass);
-
-        // HASH DA SENHA "buique2026"
-        // Se alguém olhar o código, verá apenas letras aleatórias
-        const hashCorreto = "10b89693630f576e33642398555e094760811e9f137e7355106ce60322dfc9df";
-
-        if (hashDigitado === hashCorreto) {
-            sessionStorage.setItem('admin_auth', 'true');
-        } else {
-            alert("Senha Incorreta!");
-            window.location.href = "index.html";
-        }
-    })();
-
+        // --- FIM DA SEGURANÇA ---
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // Inicialização
-            await Render.updateSessionSelector();
-            await Render.schoolList();
+            
+            // 🔒 O CÓDIGO SÓ PASSA DAQUI SE A SENHA ESTIVER CERTA
+            const autorizado = await checkSecurity();
+            if (!autorizado) return;
 
-            // Form de Evento
-            document.getElementById('create-event-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const name = document.getElementById('new-event-name').value;
-                const date = document.getElementById('new-event-date').value;
-                await Storage.createEvent(name, date);
+            // Se chegou aqui, carrega o painel
+            try {
                 await Render.updateSessionSelector();
-                e.target.reset();
-            });
-
-            // Form de Escola
-            document.getElementById('create-school-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const name = document.getElementById('new-school-name').value;
-                await Storage.saveSchool(name);
                 await Render.schoolList();
-                e.target.reset();
-            });
 
-            // Filtro da Tabela
-            document.getElementById('filter-institution').addEventListener('change', (e) => {
-                Render.table(e.target.value);
-            });
+                // --- EVENTOS DOS FORMULÁRIOS ---
 
-            // Exportar
-            document.getElementById('btn-export-csv').addEventListener('click', () => {
-                Render.exportToCSV();
-            });
+                // Criar Evento
+                const eventForm = document.getElementById('create-event-form');
+                if (eventForm) eventForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('new-event-name').value;
+                    const date = document.getElementById('new-event-date').value;
+                    await Storage.createEvent(name, date);
+                    window.location.reload();
+                });
+
+                // Criar Escola
+                const schoolForm = document.getElementById('create-school-form');
+                if (schoolForm) schoolForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('new-school-name').value;
+                    await Storage.saveSchool(name);
+                    await Render.schoolList();
+                    e.target.reset();
+                });
+
+                // Botão Exportar Excel
+                const btnExport = document.getElementById('btn-export-csv');
+                if (btnExport) btnExport.addEventListener('click', () => {
+                    Render.exportToCSV();
+                });
+
+                // Filtro
+                document.getElementById('filter-institution')?.addEventListener('change', (e) => {
+                    Render.table(e.target.value);
+                });
+
+            } catch (error) {
+                console.error("Erro no painel:", error);
+            }
         });
     </script>
 </body>

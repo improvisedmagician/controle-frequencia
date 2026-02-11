@@ -122,30 +122,65 @@ const Render = {
         });
     },
 
-    // 4. Exportação Profissional para Excel/CSV
-    async exportToCSV() {
-        const path = document.getElementById('filter-institution').value;
-        if (!path || path === 'all') return alert('⚠️ Selecione um evento na lista primeiro.');
+    // 4. Exportação Profissional para Excel/CSV (CORRIGIDO: REMOVIDO "STATIC")
+    exportToCSV() {
+        // 1. Captura todas as linhas visíveis na tabela
+        const rows = Array.from(document.querySelectorAll("table tbody tr"));
 
-        const snapshot = await get(ref(db, `frequencias/${path}`));
-        if (!snapshot.exists()) return alert('⚠️ Não há dados para exportar neste evento.');
+        if (rows.length === 0) {
+            alert("A tabela está vazia! Não há dados para exportar.");
+            return;
+        }
 
-        const data = Object.values(snapshot.val());
-        
-        // \uFEFF força o Excel a ler como UTF-8 (acentos corretos)
-        // Ponto e vírgula (;) é o padrão brasileiro de separação
-        let csv = "\uFEFFNome Completo;CPF;Escola de Origem;Local do Evento;Data;Hora do Registro\n";
-        
-        data.forEach(f => {
-            csv += `${f.name};${f.cpf};${f.userOrigin};${f.institution};${f.date};${f.time}\n`;
+        // 2. Transforma as linhas HTML em dados puros (Objetos)
+        let data = rows.map(row => {
+            const cols = row.querySelectorAll("td");
+            // Atenção: A ordem abaixo deve bater com a ordem das colunas no seu HTML
+            return {
+                nome: cols[0]?.innerText.trim() || "",
+                cpf: cols[1]?.innerText.trim() || "",
+                escola: cols[2]?.innerText.trim() || "",
+                local: cols[3]?.innerText.trim() || "",
+                data: cols[4]?.innerText.trim() || "",
+                hora: cols[5]?.innerText.trim() || ""
+            };
         });
 
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        // 3. O PULO DO GATO: Agrupar por Escola (Ordenar Alfabeticamente)
+        data.sort((a, b) => {
+            return a.escola.localeCompare(b.escola);
+        });
+
+        // 4. Monta o Cabeçalho (Adicionando a coluna Nº)
+        let csvContent = "Nº;NOME COMPLETO;CPF;ESCOLA / LOTAÇÃO;LOCAL DO EVENTO;DATA;HORA\n";
+
+        // 5. Preenche as linhas (Agora já ordenadas)
+        data.forEach((item, index) => {
+            const linha = [
+                index + 1,        // Coluna 1: Número
+                item.nome,        // Coluna 2: Nome
+                `'${item.cpf}`,   // Coluna 3: CPF
+                item.escola,      // Coluna 4: Escola
+                item.local,       // Coluna 5: Local
+                item.data,        // Coluna 6: Data
+                item.hora         // Coluna 7: Hora
+            ].join(";");
+
+            csvContent += linha + "\n";
+        });
+
+        // 6. Gera o arquivo com correção de Acentos (BOM \uFEFF)
+        const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        // Nome do arquivo limpo: Frequencia_Buique_Local_Data.csv
-        link.download = `Frequencia_Buique_${path.replace('/', '_')}.csv`;
+        
+        const hoje = new Date().toISOString().slice(0,10);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Frequencia_Organizada_${hoje}.csv`);
+        
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
     },
 
     // 5. Gestão de Escolas Cadastradas
@@ -157,7 +192,6 @@ const Render = {
         container.innerHTML = schools.length === 0 ? '<p class="text-xs italic text-slate-400 p-2">Nenhuma escola cadastrada.</p>' : '';
 
         schools.forEach(school => {
-            // Usa as classes de grid que definimos no HTML
             container.innerHTML += `
                 <div class="flex justify-between items-center bg-slate-50 border border-slate-200 p-3 rounded-xl hover:border-blue-300 transition-colors group">
                     <span class="text-[10px] font-bold text-slate-700 truncate mr-2 uppercase" title="${school}">${school}</span>
@@ -170,47 +204,32 @@ const Render = {
     }
 };
 
-/** * Ações Globais Disponíveis para o HTML (onClick) 
- * Estas funções precisam estar no window para serem chamadas pelo HTML string
- */
+/** * Ações Globais Disponíveis para o HTML (onClick) */
 window.deleteEntry = async (p) => { 
     if(confirm("🗑️ Tem certeza? Isso excluirá permanentemente o registro deste participante.")) {
         await remove(ref(db, `frequencias/${p}`)); 
-        // Não precisa chamar update() porque o onValue faz isso sozinho!
     }
 };
 
 window.deleteSchool = async (n) => {
     if(confirm(`🗑️ Remover "${n}" da lista oficial de escolas?`)) {
-        // Usa a função centralizada do Storage para garantir a mesma chave
         const key = Storage.sanitizeKey(n);
         await remove(ref(db, `escolas_oficiais/${key}`));
         Render.schoolList();
     }
 };
 
-// Substitua a função window.deleteEvent antiga por esta:
-// No arquivo js/render.js
-
 window.deleteEvent = async (path) => {
     if (!path || path === 'all') return alert("Selecione um evento válido.");
     
     const [instKey, date] = path.split('/');
     
-    // Pergunta mais suave (pois os dados estão seguros)
     if (!confirm(`Deseja encerrar o evento de ${instKey} (${date})?\n\nEle sairá do menu dos alunos, mas a lista de presença ficará salva no Banco de Dados.`)) {
         return;
     }
 
     try {
-        // 1. APAGA APENAS O EVENTO (O "Link" de acesso)
-        // Isso impede novos cadastros e limpa o menu
         await remove(ref(db, `eventos_ativos/${date}/${instKey}`));
-        
-        // 2. A LISTA DE PRESENÇA NÃO É TOCADA!
-        // A linha abaixo foi removida propositalmente para "Salvar no Firebase"
-        // await remove(ref(db, `frequencias/${instKey}/${date}`)); <--- COMENTADO
-
         alert("Evento encerrado! A lista de presença continua salva no banco de dados.");
         window.location.reload();
 
