@@ -122,7 +122,7 @@ const Render = {
         });
     },
 
-    // 4. Exportação Profissional para Excel/CSV (CORRIGIDO: REMOVIDO "STATIC")
+    // 4. Exportação Profissional para Excel/CSV (Versão Cirúrgica)
     exportToCSV() {
         // 1. Captura todas as linhas visíveis na tabela
         const rows = Array.from(document.querySelectorAll("table tbody tr"));
@@ -132,51 +132,70 @@ const Render = {
             return;
         }
 
-        // 2. Transforma as linhas HTML em dados puros (Objetos)
+        // 2. Pega informações do Evento (que estão no título do dropdown)
+        const select = document.getElementById('filter-institution');
+        let eventName = "Evento";
+        let eventDate = "";
+        
+        if (select && select.selectedIndex >= 0) {
+            const text = select.options[select.selectedIndex].text;
+            // O texto é "Nome do Evento — 10/02/2026"
+            // Vamos separar pelo travessão
+            const parts = text.split('—');
+            if (parts.length >= 2) {
+                eventName = parts[0].trim();
+                eventDate = parts[1].trim();
+            } else {
+                eventName = text;
+            }
+        }
+
+        // 3. Extrai os dados linha por linha (Cirurgia nos elementos HTML)
         let data = rows.map(row => {
-            const cols = row.querySelectorAll("td");
-            // Atenção: A ordem abaixo deve bater com a ordem das colunas no seu HTML
+            // Em vez de pegar o texto todo, pegamos os elementos específicos pelas classes
+            const nameEl = row.querySelector(".text-slate-800"); // Classe do Nome
+            const schoolEl = row.querySelector(".text-blue-500"); // Classe da Escola
+            const cols = row.querySelectorAll("td"); // Para pegar CPF e Hora
+            
             return {
-                nome: cols[0]?.innerText.trim() || "",
+                nome: nameEl ? nameEl.innerText.trim() : "Sem Nome",
+                // Removemos quebras de linha da escola para garantir
+                escola: schoolEl ? schoolEl.innerText.replace(/[\r\n]+/g, " ").trim() : "Sem Escola",
                 cpf: cols[1]?.innerText.trim() || "",
-                escola: cols[2]?.innerText.trim() || "",
-                local: cols[3]?.innerText.trim() || "",
-                data: cols[4]?.innerText.trim() || "",
-                hora: cols[5]?.innerText.trim() || ""
+                hora: cols[2]?.innerText.trim() || "",
+                local: eventName,
+                data: eventDate
             };
         });
 
-        // 3. O PULO DO GATO: Agrupar por Escola (Ordenar Alfabeticamente)
-        data.sort((a, b) => {
-            return a.escola.localeCompare(b.escola);
-        });
+        // 4. Ordena alfabeticamente por ESCOLA
+        data.sort((a, b) => a.escola.localeCompare(b.escola));
 
-        // 4. Monta o Cabeçalho (Adicionando a coluna Nº)
+        // 5. Monta o CSV (Excel Brasileiro usa ponto e vírgula ;)
         let csvContent = "Nº;NOME COMPLETO;CPF;ESCOLA / LOTAÇÃO;LOCAL DO EVENTO;DATA;HORA\n";
 
-        // 5. Preenche as linhas (Agora já ordenadas)
         data.forEach((item, index) => {
             const linha = [
-                index + 1,        // Coluna 1: Número
-                item.nome,        // Coluna 2: Nome
-                `'${item.cpf}`,   // Coluna 3: CPF
-                item.escola,      // Coluna 4: Escola
-                item.local,       // Coluna 5: Local
-                item.data,        // Coluna 6: Data
-                item.hora         // Coluna 7: Hora
+                index + 1,        // Nº
+                item.nome,        // Nome Limpo
+                `'${item.cpf}`,   // CPF (com aspas para não perder zero)
+                item.escola,      // Escola Separada
+                item.local,       // Nome do Evento
+                item.data,        // Data do Evento
+                item.hora         // Hora do Registro
             ].join(";");
 
             csvContent += linha + "\n";
         });
 
-        // 6. Gera o arquivo com correção de Acentos (BOM \uFEFF)
+        // 6. Gera o download com suporte a Acentos (BOM)
         const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         
         const hoje = new Date().toISOString().slice(0,10);
         link.setAttribute("href", url);
-        link.setAttribute("download", `Frequencia_Organizada_${hoje}.csv`);
+        link.setAttribute("download", `Lista_Presenca_${hoje}.csv`);
         
         document.body.appendChild(link);
         link.click();
