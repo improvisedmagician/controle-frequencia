@@ -172,7 +172,7 @@ const Render = {
         data.sort((a, b) => a.escola.localeCompare(b.escola));
 
         // 5. Monta o CSV (Excel Brasileiro usa ponto e vírgula ;)
-        let csvContent = "Nº;NOME COMPLETO;CPF;ESCOLA / LOTAÇÃO;LOCAL DO EVENTO;DATA;HORA\n";
+        let csvContent = "Nº;NOME COMPLETO;CPF;ESCOLA;EVENTO;DATA;HORA\n";
 
         data.forEach((item, index) => {
             const linha = [
