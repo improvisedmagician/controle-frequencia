@@ -192,7 +192,8 @@
             } catch (e) { console.error(e); }
 
             // Carregar Eventos
-            const hoje = new Date().toISOString().split('T')[0];
+            const local = new Date();
+            const hoje = new Date(local.getTime() - (local.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
             try {
                 const events = await Storage.getEventsByDate(hoje);
                 if (events.length > 0) {

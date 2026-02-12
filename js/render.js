@@ -88,6 +88,9 @@ const Render = {
                 const entries = Object.entries(snapshot.val());
                 
                 entries.forEach(([id, freq]) => {
+                    // Proteção contra dados corrompidos
+                    if (!freq || !freq.name) return;
+
                     const initial = freq.name.charAt(0).toUpperCase();
                     tableBody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 group">
@@ -172,7 +175,7 @@ const Render = {
         data.sort((a, b) => a.escola.localeCompare(b.escola));
 
         // 5. Monta o CSV (Excel Brasileiro usa ponto e vírgula ;)
-        let csvContent = "Nº;NOME COMPLETO;CPF;ESCOLA;EVENTO;DATA;HORA\n";
+        let csvContent = "Nº;NOME COMPLETO;CPF;ESCOLA / LOTAÇÃO;LOCAL DO EVENTO;DATA;HORA\n";
 
         data.forEach((item, index) => {
             const linha = [
